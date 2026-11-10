@@ -1,0 +1,51 @@
+<odoo>
+    <menuitem id="menu_knowledge_root"
+              name="Knowledge"
+              sequence="10"
+              web_icon="cl_knowledge_management,static/description/icon.png"/>
+
+    <menuitem id="menu_knowledge_workspace"
+              name="Knowledge"
+              sequence="10"
+              parent="menu_knowledge_root"
+              action="action_knowledge_split"/>
+
+    <menuitem id="menu_knowledge_configuration"
+              name="Configuration"
+              parent="menu_knowledge_root"
+              sequence="20"/>
+
+    <record id="action_article_tree_readonly" model="ir.actions.act_window">
+        <field name="name">Articles</field>
+        <field name="res_model">knowledge.article</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_knowledge_article_search"/>
+    </record>
+
+    <menuitem id="menu_knowledge_articles"
+              name="Articles"
+              parent="menu_knowledge_configuration"
+              action="action_article_tree_readonly"
+              sequence="20"/>
+
+    <record id="action_compare_selected_versions" model="ir.actions.server">
+        <field name="name">Compare Selected Versions</field>
+        <field name="model_id" ref="model_knowledge_article_version"/>
+        <field name="binding_model_id" ref="model_knowledge_article_version"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records[0].action_compare_selected_versions(records)</field>
+    </record>
+
+    <record id="action_knowledge_tags" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">knowledge.tag</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_knowledge_tags"
+              name="Tags"
+              parent="menu_knowledge_configuration"
+              action="action_knowledge_tags"
+              sequence="30"/>
+</odoo>

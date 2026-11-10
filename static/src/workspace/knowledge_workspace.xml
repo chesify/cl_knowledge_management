@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="cl_knowledge_management.KnowledgeWorkspace">
+        <div class="o_knowledge_workspace" t-ref="this.rootRef"
+             t-att-class="{ o_knowledge_sidebar_collapsed: this.state.sidebarCollapsed }">
+
+            <aside class="o_knowledge_sidebar" t-att-style="'width:' + this.state.sidebarWidth + 'px'" aria-label="Articles">
+                <div class="o_knowledge_sidebar_top">
+                    <button class="o_knowledge_searchbox" t-on-click="() => this.openSearch()">
+                        <i class="oi" data-icon="search" aria-hidden="true"/>
+                        <span>Search articles</span>
+                    </button>
+                    <button class="btn btn-primary o_knowledge_new" title="New article" aria-label="New article"
+                            t-on-click="() => this.newArticle()" data-hotkey="c">
+                        <i class="oi" data-icon="add" aria-hidden="true"/>
+                    </button>
+                </div>
+
+                <nav class="o_knowledge_tree">
+                    <t t-if="this.favoriteArticles().length and !this.state.onlyFavorites">
+                        <div class="o_knowledge_section_title">Favorites</div>
+                        <button t-foreach="this.favoriteArticles()" t-as="favorite" t-key="favorite.id"
+                                class="o_knowledge_row"
+                                t-att-class="{ o_knowledge_row_active: favorite.id === this.state.currentId }"
+                                t-on-click="() => this.openArticle(favorite)">
+                            <span class="o_knowledge_row_spacer"/>
+                            <i class="oi o_knowledge_row_icon text-warning o_knowledge_icon_filled" data-icon="star" aria-hidden="true"/>
+                            <span class="o_knowledge_row_label" t-out="favorite.name"/>
+                        </button>
+                    </t>
+
+                    <div class="o_knowledge_section_title d-flex align-items-center">
+                        <span class="flex-grow-1">Articles</span>
+                        <Dropdown position="'bottom-end'">
+                            <button class="o_knowledge_icon_btn" title="Sort and display" aria-label="Sort and display">
+                                <i class="oi" data-icon="swap_vert" aria-hidden="true"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <div class="dropdown-header">Sort by</div>
+                                <t t-foreach="this.SORT_OPTIONS" t-as="option" t-key="option.value">
+                                    <DropdownItem class="{ selected: option.value === this.state.sortOrder }"
+                                                  onSelected="() => this.setSort(option.value)">
+                                        <t t-out="option.label"/>
+                                    </DropdownItem>
+                                </t>
+                                <div class="dropdown-divider"/>
+                                <DropdownItem onSelected="() => this.expandAll()">Expand all</DropdownItem>
+                                <DropdownItem onSelected="() => this.collapseAll()">Collapse all</DropdownItem>
+                            </t>
+                        </Dropdown>
+                        <Dropdown position="'bottom-end'" menuClass="'o_knowledge_filter_menu'">
+                            <button class="o_knowledge_icon_btn" title="Filter" aria-label="Filter">
+                                <i class="oi" data-icon="filter_alt" aria-hidden="true"/>
+                                <span t-if="this.activeFilterCount()" class="o_knowledge_count" t-out="this.activeFilterCount()"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <div class="o_knowledge_filter_body">
+                                    <CheckBox value="this.state.onlyFavorites" onChange="() => this.toggleFavoritesFilter()">Favorites only</CheckBox>
+                                    <CheckBox value="this.state.showArchived" onChange="() => this.toggleArchivedFilter()">Archived articles</CheckBox>
+                                    <div class="o_knowledge_section_title px-0 mt-3">Tags</div>
+                                    <input type="text" class="o_input mb-2" placeholder="Search tags" t-model.proxy="this.state.tagSearch"/>
+                                    <div class="o_knowledge_tag_cloud">
+                                        <button t-foreach="this.filteredTags()" t-as="tag" t-key="tag.id"
+                                                class="o_knowledge_tag_toggle"
+                                                t-att-class="{ o_knowledge_tag_on: this.state.selectedTags.includes(tag.id) }"
+                                                t-att-aria-pressed="this.state.selectedTags.includes(tag.id) ? 'true' : 'false'"
+                                                t-on-click="() => this.toggleTagFilter(tag)"
+                                                t-out="tag.name"/>
+                                        <span t-if="!this.filteredTags().length" class="text-muted small">No tags found</span>
+                                    </div>
+                                    <button t-if="this.hasActiveFilters()" class="btn btn-link btn-sm px-0 mt-2" t-on-click="() => this.clearFilters()">Clear all filters</button>
+                                </div>
+                            </t>
+                        </Dropdown>
+                    </div>
+
+                    <t t-foreach="this.rows()" t-as="row" t-key="row.article.id">
+                        <div class="o_knowledge_row"
+                             t-att-class="{
+                                 o_knowledge_row_active: row.article.id === this.state.currentId,
+                                 o_knowledge_row_archived: !row.article.active,
+                                 o_knowledge_row_match: row.tagMatch,
+                             }"
+                             t-att-style="'--o-knowledge-depth:' + row.depth"
+                             t-att-data-article-id="row.article.id"
+                             t-on-click="() => this.openArticle(row.article)">
+                            <button t-if="row.hasChildren" class="o_knowledge_row_toggle"
+                                    t-att-aria-expanded="row.expanded ? 'true' : 'false'"
+                                    t-att-aria-label="row.expanded ? 'Collapse' : 'Expand'"
+                                    t-on-click.stop="() => this.toggleRow(row)">
+                                <i class="oi" t-att-data-icon="row.expanded ? 'keyboard_arrow_down' : 'chevron_right'" aria-hidden="true"/>
+                            </button>
+                            <span t-else="" class="o_knowledge_row_spacer"/>
+                            <i class="oi o_knowledge_row_icon" t-att-data-icon="row.hasChildren ? 'folder' : 'description'" aria-hidden="true"/>
+                            <span class="o_knowledge_row_label" t-att-title="row.article.name" t-out="row.article.name"/>
+                            <button class="o_knowledge_row_add" title="Add a sub-article" aria-label="Add a sub-article"
+                                    t-on-click.stop="() => this.newArticle(row.article)">
+                                <i class="oi" data-icon="add" aria-hidden="true"/>
+                            </button>
+                        </div>
+                    </t>
+
+                    <div t-if="!this.state.loading and !this.rows().length" class="o_knowledge_tree_empty">
+                        <t t-if="this.hasActiveFilters()">
+                            <p>No articles match these filters.</p>
+                            <button class="btn btn-link btn-sm" t-on-click="() => this.clearFilters()">Clear filters</button>
+                        </t>
+                        <p t-else="">Your articles will appear here.</p>
+                    </div>
+                </nav>
+            </aside>
+
+            <div class="o_knowledge_splitter" role="separator" aria-orientation="vertical" t-on-pointerdown="(ev) => this.onResizeStart(ev)">
+                <button class="o_knowledge_splitter_btn"
+                        t-att-title="this.state.sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'"
+                        t-att-aria-label="this.state.sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'"
+                        t-on-pointerdown.stop=""
+                        t-on-click="() => this.toggleSidebar()">
+                    <i class="oi" t-att-data-icon="this.state.sidebarCollapsed ? 'chevron_right' : 'chevron_left'" aria-hidden="true"/>
+                </button>
+            </div>
+
+            <section class="o_knowledge_main" t-ref="this.contentRef">
+                <t t-if="this.current() and this.state.detail">
+                    <t t-call="cl_knowledge_management.ArticleTopbar"/>
+                    <div class="o_knowledge_page">
+                        <article class="o_knowledge_sheet">
+                            <t t-if="this.state.editing">
+                                <input class="o_knowledge_title_input" type="text" aria-label="Article title"
+                                       placeholder="Untitled" t-model.proxy="this.state.editName"/>
+                                <Wysiwyg t-key="'editor_' + this.state.currentId"
+                                         config="this.editorConfig"
+                                         class="'o_knowledge_wysiwyg'"
+                                         contentClass="'o_knowledge_prose'"
+                                         onLoad="(editor) => this.editor = editor"/>
+                            </t>
+                            <t t-else="">
+                                <h1 class="o_knowledge_title" t-out="this.current().name"/>
+                                <t t-call="cl_knowledge_management.ArticleByline"/>
+                                <div t-if="this.parsedContent().empty" class="o_knowledge_blank">
+                                    <i class="oi" data-icon="edit_note" aria-hidden="true"/>
+                                    <h3>This article is empty</h3>
+                                    <button t-if="this.canEdit()" class="btn btn-primary" t-on-click="() => this.startEditing()">Start writing</button>
+                                </div>
+                                <div t-else="" class="o_knowledge_prose" t-out="this.parsedContent().markup"/>
+                                <footer class="o_knowledge_stats">
+                                    <span title="Views" aria-label="Views"><i class="oi" data-icon="visibility" aria-hidden="true"/> <t t-out="this.current().views_count || 0"/></span>
+                                    <span title="Likes" aria-label="Likes"><i class="oi" data-icon="favorite" aria-hidden="true"/> <t t-out="this.current().likes_count || 0"/></span>
+                                </footer>
+                                <ArticleComments t-key="'comments_' + this.state.currentId" articleId="this.state.currentId"/>
+                            </t>
+                        </article>
+                        <aside t-if="!this.state.editing and this.parsedContent().headings.length > 1" class="o_knowledge_toc" aria-label="On this page">
+                            <div class="o_knowledge_section_title px-0">On this page</div>
+                            <button t-foreach="this.parsedContent().headings" t-as="heading" t-key="heading.index"
+                                    t-att-class="'o_knowledge_toc_item o_knowledge_toc_level_' + heading.level"
+                                    t-on-click="() => this.scrollToHeading(heading)"
+                                    t-out="heading.text"/>
+                        </aside>
+                    </div>
+                </t>
+                <div t-elif="this.state.loading or this.state.detailLoading" class="o_knowledge_skeleton" aria-busy="true">
+                    <div class="o_knowledge_skeleton_title"/>
+                    <div class="o_knowledge_skeleton_line"/>
+                    <div class="o_knowledge_skeleton_line"/>
+                    <div class="o_knowledge_skeleton_line w-50"/>
+                </div>
+                <div t-else="" class="o_knowledge_welcome">
+                    <i class="oi" data-icon="description" aria-hidden="true"/>
+                    <t t-if="this.hasActiveFilters()">
+                        <h2>Nothing matches your filters</h2>
+                        <button class="btn btn-secondary" t-on-click="() => this.clearFilters()">Clear filters</button>
+                    </t>
+                    <t t-else="">
+                        <h2>Build your team's knowledge</h2>
+                        <p>Capture how things work, then find it in seconds.</p>
+                        <button class="btn btn-primary" t-on-click="() => this.newArticle()">Create your first article</button>
+                    </t>
+                </div>
+            </section>
+        </div>
+    </t>
+
+    <t t-name="cl_knowledge_management.ArticleTopbar">
+        <header class="o_knowledge_topbar">
+            <ol class="o_knowledge_crumbs">
+                <li t-foreach="this.breadcrumbs()" t-as="crumb" t-key="crumb.id">
+                    <button t-att-aria-current="crumb_last ? 'page' : undefined" t-on-click="() => this.openArticle(crumb)" t-out="crumb.name"/>
+                </li>
+            </ol>
+            <span t-if="!this.current().active" class="badge rounded-pill text-bg-warning">Archived</span>
+            <div class="o_knowledge_actions">
+                <t t-if="this.state.editing">
+                    <button class="btn btn-secondary" t-att-disabled="this.state.saving" t-on-click="() => this.discardEditing()" data-hotkey="j">Discard</button>
+                    <button class="btn btn-primary" t-att-disabled="this.state.saving" t-on-click="() => this.commitEditing()" data-hotkey="s">
+                        <t t-if="this.state.saving">Saving…</t>
+                        <t t-else="">Save</t>
+                    </button>
+                </t>
+                <div class="d-flex gap-1 align-items-center" t-att-class="{ 'd-none': this.state.editing }">
+                    <button class="o_knowledge_icon_btn" t-att-class="{ 'text-danger': this.isLiked() }"
+                            t-att-title="this.isLiked() ? 'Unlike' : 'Like'" t-att-aria-pressed="this.isLiked() ? 'true' : 'false'" aria-label="Like"
+                            t-on-click="() => this.toggleLike()">
+                        <i class="oi" t-att-class="{ o_knowledge_icon_filled: this.isLiked() }" data-icon="favorite" aria-hidden="true"/>
+                    </button>
+                    <button class="o_knowledge_icon_btn" t-att-class="{ 'text-warning': this.state.favorites[this.state.currentId] }"
+                            title="Add to favorites" t-att-aria-pressed="this.state.favorites[this.state.currentId] ? 'true' : 'false'" aria-label="Add to favorites"
+                            t-on-click="() => this.toggleFavorite()">
+                        <i class="oi" t-att-class="{ o_knowledge_icon_filled: this.state.favorites[this.state.currentId] }" data-icon="star" aria-hidden="true"/>
+                    </button>
+                    <button class="o_knowledge_icon_btn" title="Copy public link" aria-label="Copy public link" t-on-click="() => this.share()">
+                        <i class="oi" data-icon="link" aria-hidden="true"/>
+                    </button>
+                    <button t-if="this.canEdit()" class="btn btn-primary o_knowledge_edit" t-on-click="() => this.startEditing()" data-hotkey="e">
+                        <i class="oi" data-icon="edit" aria-hidden="true"/> <span>Edit</span>
+                    </button>
+                    <Dropdown position="'bottom-end'" menuClass="'o_knowledge_more_menu'">
+                        <button class="o_knowledge_icon_btn" title="More actions" aria-label="More actions">
+                            <i class="oi" data-icon="more_horiz" aria-hidden="true"/>
+                        </button>
+                        <t t-set-slot="content">
+                            <t t-if="this.canEdit()">
+                                <DropdownItem onSelected="() => this.rename()"><i class="oi me-2" data-icon="title" aria-hidden="true"/>Rename</DropdownItem>
+                                <DropdownItem onSelected="() => this.moveArticle()"><i class="oi me-2" data-icon="folder_open" aria-hidden="true"/>Move to…</DropdownItem>
+                                <DropdownItem onSelected="() => this.editTags()"><i class="oi me-2" data-icon="sell" aria-hidden="true"/>Tags…</DropdownItem>
+                                <div class="dropdown-divider"/>
+                            </t>
+                            <DropdownItem onSelected="() => this.duplicate()"><i class="oi me-2" data-icon="content_copy" aria-hidden="true"/>Duplicate</DropdownItem>
+                            <DropdownItem onSelected="() => this.exportArticle()"><i class="oi me-2" data-icon="print" aria-hidden="true"/>Print or export PDF</DropdownItem>
+                            <DropdownItem onSelected="() => this.openVersions()"><i class="oi me-2" data-icon="history" aria-hidden="true"/>Version history</DropdownItem>
+                            <DropdownItem t-if="this.canEdit()" onSelected="() => this.openSettings()"><i class="oi me-2" data-icon="lock" aria-hidden="true"/>Access rights &amp; settings</DropdownItem>
+                            <t t-if="this.state.detail.can_archive">
+                                <div class="dropdown-divider"/>
+                                <DropdownItem t-if="this.current().active" class="'text-danger'" onSelected="() => this.archive()"><i class="oi me-2" data-icon="archive" aria-hidden="true"/>Archive</DropdownItem>
+                                <DropdownItem t-else="" onSelected="() => this.unarchive()"><i class="oi me-2" data-icon="unarchive" aria-hidden="true"/>Restore</DropdownItem>
+                            </t>
+                        </t>
+                    </Dropdown>
+                </div>
+            </div>
+        </header>
+    </t>
+
+    <t t-name="cl_knowledge_management.ArticleByline">
+        <div class="o_knowledge_byline">
+            <img class="o_avatar rounded" t-att-src="this.avatarUrl(this.current().write_uid)" alt=""/>
+            <span>
+                <strong t-out="this.userName(this.current().write_uid)"/>
+                <span class="text-muted"> edited <t t-out="this.relativeDate(this.current().write_date)"/></span>
+            </span>
+            <span class="o_knowledge_dot" aria-hidden="true"/>
+            <span class="text-muted">Created by <t t-out="this.userName(this.current().create_uid)"/> <t t-out="this.relativeDate(this.current().create_date)"/></span>
+            <span class="o_knowledge_dot" aria-hidden="true"/>
+            <span class="text-muted"><t t-out="this.parsedContent().readingMinutes"/> min read</span>
+        </div>
+        <div t-if="this.currentTags().length" class="o_knowledge_tags">
+            <span t-foreach="this.currentTags()" t-as="tag" t-key="tag.id"
+                  t-att-class="'o_tag badge rounded-pill o_tag_color_' + (tag.color || 0)" t-out="tag.name"/>
+        </div>
+    </t>
+
+</templates>

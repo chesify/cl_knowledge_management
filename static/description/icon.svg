@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 454 454" width="454" height="454" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="14">
+  <!-- Grey outer circuit branches (Chesify connector style) -->
+  <g stroke="#919191">
+    <path d="M227 292L192 257H120L94 231V214"/>
+    <circle cx="94" cy="196" r="16"/>
+    <path d="M227 292L262 257H334L360 231V214"/>
+    <circle cx="360" cy="196" r="16"/>
+  </g>
+  <!-- Chesify teal: knowledge tree growing from the book -->
+  <g stroke="#1dbdb9">
+    <path d="M227 304V98"/>
+    <path d="M227 236L160 169V146"/>
+    <circle cx="160" cy="128" r="16"/>
+    <path d="M227 236L294 169V146"/>
+    <circle cx="294" cy="128" r="16"/>
+    <circle cx="227" cy="72" r="24"/>
+    <path d="M227 18V24M177 34L183 40M277 34L271 40M160 76H167M294 76H287"/>
+  </g>
+  <circle cx="227" cy="72" r="9" fill="#1dbdb9"/>
+  <!-- Odoo purple: open book -->
+  <g stroke="#9b5487">
+    <path d="M227 334C180 304 110 300 44 312V424C110 414 180 416 227 440C274 416 344 414 410 424V312C344 300 274 304 227 334Z"/>
+    <path d="M227 334V440"/>
+    <path d="M84 350C124 344 164 348 194 362M84 386C116 381 148 384 172 394"/>
+    <path d="M260 362C290 348 330 344 370 350M282 394C306 384 338 381 370 386"/>
+  </g>
+</svg>

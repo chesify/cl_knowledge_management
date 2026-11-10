@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="cl_knowledge_management.PromptDialog">
+        <Dialog title="this.props.title" size="'md'" contentClass="'o_knowledge_dialog'">
+            <label class="form-label fw-medium" t-out="this.props.label"/>
+            <input type="text" class="o_input o_knowledge_prompt_input" t-ref="this.inputRef"
+                   t-att-placeholder="this.props.placeholder"
+                   t-att-readonly="this.props.readonly"
+                   t-model.proxy="this.state.value"
+                   t-on-keydown="(ev) => ev.key === 'Enter' and this.confirm()"/>
+            <div t-if="this.props.hint" class="form-text" t-out="this.props.hint"/>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="!this.canConfirm()" t-on-click="() => this.confirm()" t-out="this.props.confirmLabel"/>
+                <button t-if="!this.props.readonly" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="cl_knowledge_management.SearchDialog">
+        <Dialog header="false" footer="false" size="'lg'" withBodyPadding="false" contentClass="'o_knowledge_dialog'">
+            <div class="o_knowledge_search_head" t-on-keydown="(ev) => this.onKeydown(ev)">
+                <i class="oi" data-icon="search" aria-hidden="true"/>
+                <input type="text" t-ref="this.inputRef" placeholder="Search articles" aria-label="Search articles"
+                       t-model.proxy="this.state.query" t-on-input="() => this.onInput()"/>
+            </div>
+            <div class="o_knowledge_search_options">
+                <CheckBox value="this.state.inContent" onChange="() => this.toggleContent()">Search inside content</CheckBox>
+                <span t-if="this.props.filtered" class="text-muted small">Limited to your active filters</span>
+            </div>
+            <div class="o_knowledge_search_results" role="listbox">
+                <button t-foreach="this.state.results" t-as="result" t-key="result.id"
+                        class="o_knowledge_search_result" role="option"
+                        t-att-aria-selected="result_index === this.state.active ? 'true' : 'false'"
+                        t-att-class="{ o_knowledge_search_active: result_index === this.state.active }"
+                        t-on-click="() => this.open(result)"
+                        t-on-pointerenter="() => this.state.active = result_index">
+                    <t t-set="title" t-value="this.highlight(result.name)"/>
+                    <span class="o_knowledge_search_name"><t t-out="title.before"/><mark t-if="title.match" t-out="title.match"/><t t-out="title.after"/></span>
+                    <span t-if="result.display_name !== result.name" class="o_knowledge_search_path" t-out="result.display_name"/>
+                    <span t-if="result.snippet" class="o_knowledge_search_snippet">
+                        <t t-set="snippet" t-value="this.highlight(result.snippet)"/>
+                        <t t-out="snippet.before"/><mark t-if="snippet.match" t-out="snippet.match"/><t t-out="snippet.after"/>
+                    </span>
+                </button>
+                <div t-if="this.state.searched and !this.state.results.length" class="o_knowledge_search_empty">No articles found</div>
+                <div t-if="!this.state.searched" class="o_knowledge_search_empty">Type to search your knowledge base</div>
+            </div>
+        </Dialog>
+    </t>
+
+    <t t-name="cl_knowledge_management.MoveDialog">
+        <Dialog title.translate="Move article" size="'md'" contentClass="'o_knowledge_dialog'">
+            <p class="text-muted">Choose where to put <strong t-out="this.props.article.name"/>.</p>
+            <div class="o_knowledge_pick_list" role="listbox">
+                <button class="o_knowledge_pick" role="option"
+                        t-att-class="{ o_knowledge_pick_on: this.state.target === null }"
+                        t-att-aria-selected="this.state.target === null ? 'true' : 'false'"
+                        t-on-click="() => this.state.target = null">
+                    <i class="oi" data-icon="home" aria-hidden="true"/>Top level
+                </button>
+                <button t-foreach="this.rows()" t-as="row" t-key="row.article.id"
+                        class="o_knowledge_pick" role="option"
+                        t-att-class="{ o_knowledge_pick_on: this.state.target === row.article.id }"
+                        t-att-aria-selected="this.state.target === row.article.id ? 'true' : 'false'"
+                        t-att-disabled="row.disabled"
+                        t-att-style="'--o-knowledge-depth:' + (row.depth + 1)"
+                        t-on-click="() => this.state.target = row.article.id">
+                    <i class="oi" data-icon="description" aria-hidden="true"/><span class="text-truncate" t-out="row.article.name"/>
+                </button>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="this.state.busy" t-on-click="() => this.confirm()">Move here</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="cl_knowledge_management.TagsDialog">
+        <Dialog title.translate="Edit tags" size="'md'" contentClass="'o_knowledge_dialog'">
+            <input type="text" class="o_input mb-3" placeholder="Search tags" aria-label="Search tags" t-model.proxy="this.state.search"/>
+            <div class="o_knowledge_tag_cloud">
+                <button t-foreach="this.visibleTags()" t-as="tag" t-key="tag.id"
+                        class="o_knowledge_tag_toggle"
+                        t-att-class="{ o_knowledge_tag_on: this.state.selected.includes(tag.id) }"
+                        t-att-aria-pressed="this.state.selected.includes(tag.id) ? 'true' : 'false'"
+                        t-on-click="() => this.toggle(tag)" t-out="tag.name"/>
+                <span t-if="!this.visibleTags().length" class="text-muted">No tags found. Create tags under Configuration.</span>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="this.state.busy" t-on-click="() => this.confirm()">Save</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="cl_knowledge_management.VersionsDialog">
+        <Dialog title="this.title()" size="'xl'" withBodyPadding="false" contentClass="'o_knowledge_dialog'">
+            <div t-if="!this.state.versions.length" class="o_knowledge_search_empty">
+                No earlier versions yet. A version is saved each time the content changes.
+            </div>
+            <div t-else="" class="o_knowledge_versions">
+                <div class="o_knowledge_versions_list" role="listbox">
+                    <button t-foreach="this.state.versions" t-as="version" t-key="version.id"
+                            class="o_knowledge_version" role="option"
+                            t-att-class="{ o_knowledge_version_on: version.id === this.state.selected?.id }"
+                            t-att-aria-selected="version.id === this.state.selected?.id ? 'true' : 'false'"
+                            t-on-click="() => this.select(version)">
+                        <strong>Version <t t-out="version.version_number"/></strong>
+                        <span class="text-muted small"><t t-out="version.user_id[1]"/> · <t t-out="version.relative"/></span>
+                    </button>
+                </div>
+                <div class="o_knowledge_versions_diff">
+                    <div class="o_knowledge_versions_bar">
+                        <span class="fw-medium">Version <t t-out="this.state.selected?.version_number"/></span>
+                        <span class="text-muted">compared with</span>
+                        <select class="o_input w-auto pe-4" aria-label="Compare with" t-on-change="(ev) => this.setCompareWith(ev)">
+                            <option t-att-value="this.CURRENT" t-att-selected="this.state.compareWith === this.CURRENT">Current article (v<t t-out="this.props.currentVersion"/>)</option>
+                            <t t-foreach="this.state.versions" t-as="version" t-key="version.id">
+                                <option t-if="version.id !== this.state.selected?.id" t-att-value="version.id" t-att-selected="this.state.compareWith === version.id">Version <t t-out="version.version_number"/></option>
+                            </t>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" t-att-disabled="!this.canSwap()" t-on-click="() => this.swap()">
+                            <i class="oi" data-icon="swap_horiz" aria-hidden="true"/> Swap
+                        </button>
+                    </div>
+                    <div class="o_knowledge_diff" t-att-class="{ 'opacity-50': this.state.loading }" t-out="this.state.diff"/>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

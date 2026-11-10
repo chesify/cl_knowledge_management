@@ -1,0 +1,40 @@
+.o_knowledge_public {
+    padding: 56px 20px 96px;
+}
+
+.o_knowledge_public_article {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.o_knowledge_public_header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid $border-color;
+
+    h1 {
+        margin-bottom: 8px;
+        font-size: 2.25rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+}
+
+.o_knowledge_public_byline {
+    display: flex;
+    gap: 6px;
+    margin: 0;
+    color: $text-muted;
+    font-size: 14px;
+}
+
+.o_knowledge_public_body {
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}

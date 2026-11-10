@@ -1,0 +1,654 @@
+$o-knowledge-row-height: 30px;
+$o-knowledge-indent: 16px;
+$o-knowledge-reading-width: 760px;
+$o-knowledge-hover-bg: rgba(mix($o-gray-500, $o-gray-700), .12);
+
+body.o_knowledge_resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
+.o_knowledge_workspace {
+    position: relative;
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    background: $o-view-background-color;
+}
+
+.o_knowledge_icon_btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: $border-radius;
+    background: transparent;
+    color: $o-gray-700;
+    letter-spacing: 0; // ligature icons break under inherited letter-spacing
+    text-transform: none; // and under uppercase
+    transition: background-color .12s ease, color .12s ease;
+
+    &:hover,
+    &.show {
+        background: $o-knowledge-hover-bg;
+        color: $o-gray-900;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $o-action;
+        outline-offset: 1px;
+    }
+}
+
+.o_knowledge_icon_filled {
+    font-variation-settings: "FILL" 1;
+}
+
+.o_knowledge_count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 15px;
+    padding: 0 3px;
+    border-radius: 8px;
+    background: $o-action;
+    color: color-contrast($o-action);
+    font-size: 10px;
+    line-height: 15px;
+}
+
+.o_knowledge_section_title {
+    padding: 14px 8px 4px;
+    color: $o-gray-600;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+// Sidebar
+.o_knowledge_sidebar {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    min-height: 0;
+    background: $o-webclient-background-color;
+    transition: margin .18s ease;
+}
+
+.o_knowledge_sidebar_collapsed .o_knowledge_sidebar {
+    display: none;
+}
+
+.o_knowledge_sidebar_top {
+    display: flex;
+    gap: 8px;
+    padding: 12px 12px 4px;
+}
+
+.o_knowledge_new {
+    display: inline-flex;
+    flex: 0 0 34px;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0;
+}
+
+.o_knowledge_searchbox {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    background: $o-view-background-color;
+    color: $o-gray-600;
+    text-align: start;
+    transition: border-color .12s ease;
+
+    &:hover {
+        border-color: $o-gray-400;
+    }
+}
+
+.o_knowledge_tree {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0 8px 16px;
+    overflow-y: auto;
+}
+
+.o_knowledge_tree_empty {
+    padding: 24px 12px;
+    color: $o-gray-600;
+    text-align: center;
+}
+
+.o_knowledge_row {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    width: 100%;
+    min-height: $o-knowledge-row-height;
+    padding: 0 4px 0 calc(4px + var(--o-knowledge-depth, 0) * #{$o-knowledge-indent});
+    border: 0;
+    border-radius: $border-radius;
+    background: transparent;
+    color: $o-gray-800;
+    text-align: start;
+    cursor: pointer;
+
+    &:hover {
+        background: $o-knowledge-hover-bg;
+    }
+
+    &:hover .o_knowledge_row_add,
+    &:focus-within .o_knowledge_row_add {
+        opacity: 1;
+    }
+}
+
+.o_knowledge_row_active,
+.o_knowledge_row_active:hover {
+    background: $o-component-active-bg;
+    color: $o-gray-900;
+    font-weight: 500;
+}
+
+.o_knowledge_row_archived .o_knowledge_row_label {
+    color: $o-gray-500;
+    font-style: italic;
+}
+
+.o_knowledge_row_match {
+    box-shadow: inset 2px 0 0 $o-action;
+}
+
+.o_knowledge_row_toggle,
+.o_knowledge_row_add {
+    display: inline-flex;
+    flex: 0 0 22px;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: $o-gray-600;
+
+    &:hover {
+        background: $o-knowledge-hover-bg;
+        color: $o-gray-900;
+    }
+}
+
+.o_knowledge_row_add {
+    opacity: 0;
+}
+
+.o_knowledge_row_spacer {
+    flex: 0 0 22px;
+}
+
+.o_knowledge_row_icon {
+    flex: 0 0 auto;
+    color: $o-gray-500;
+    font-size: 17px;
+}
+
+.o_knowledge_row_label {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-inline-start: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_knowledge_filter_body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 270px;
+    max-width: 90vw;
+    padding: 8px 14px;
+}
+
+.o_knowledge_tag_cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.o_knowledge_tag_toggle {
+    padding: 2px 10px;
+    border: 1px solid $border-color;
+    border-radius: 999px;
+    background: transparent;
+    color: $o-gray-800;
+    font-size: 12px;
+}
+
+.o_knowledge_tag_on {
+    border-color: $o-action;
+    background: $o-action;
+    color: color-contrast($o-action);
+}
+
+// Splitter
+.o_knowledge_splitter {
+    position: relative;
+    z-index: 11; // the collapse button must stay above the sticky top bar
+    flex: 0 0 1px;
+    background: $border-color;
+    cursor: col-resize;
+
+    &::after {
+        position: absolute;
+        inset: 0 -4px;
+        content: "";
+    }
+
+    &:hover .o_knowledge_splitter_btn {
+        opacity: 1;
+    }
+}
+
+.o_knowledge_splitter_btn {
+    position: absolute;
+    top: 18px;
+    left: -11px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid $border-color;
+    border-radius: 50%;
+    background: $o-view-background-color;
+    color: $o-gray-700;
+    opacity: 0;
+    box-shadow: 0 1px 3px rgba($o-black, .15);
+    transition: opacity .12s ease;
+
+    &:focus-visible {
+        opacity: 1;
+    }
+}
+
+.o_knowledge_sidebar_collapsed .o_knowledge_splitter {
+    cursor: default;
+
+    .o_knowledge_splitter_btn {
+        left: 6px;
+        opacity: 1;
+    }
+}
+
+// Main area
+.o_knowledge_main {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-y: auto;
+    background: $o-view-background-color;
+}
+
+.o_knowledge_topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-height: 52px;
+    padding: 8px 24px 8px 36px;
+    border-bottom: 1px solid $border-color;
+    background: $o-view-background-color;
+}
+
+.o_knowledge_crumbs {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+    }
+
+    li + li::before {
+        padding: 0 4px;
+        color: $o-gray-400;
+        content: "/";
+    }
+
+    button {
+        padding: 2px 6px;
+        overflow: hidden;
+        border: 0;
+        border-radius: $border-radius-sm;
+        background: transparent;
+        color: $o-gray-600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:hover {
+            background: $o-knowledge-hover-bg;
+            color: $o-gray-900;
+        }
+
+        &[aria-current="page"] {
+            color: $o-gray-900;
+            font-weight: 500;
+        }
+    }
+}
+
+.o_knowledge_actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 4px;
+    align-items: center;
+}
+
+.o_knowledge_edit {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    margin-inline: 6px 2px;
+}
+
+.o_knowledge_page {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    padding: 40px 32px 96px;
+}
+
+.o_knowledge_sheet {
+    flex: 0 1 $o-knowledge-reading-width;
+    min-width: 0;
+}
+
+.o_knowledge_title,
+.o_knowledge_title_input {
+    margin: 0 0 12px;
+    color: $o-gray-900;
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -.015em;
+}
+
+.o_knowledge_title_input {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.o_knowledge_byline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    color: $o-gray-700;
+    font-size: 13px;
+
+    .o_avatar {
+        width: 24px;
+        height: 24px;
+        object-fit: cover;
+    }
+}
+
+.o_knowledge_dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: $o-gray-400;
+}
+
+.o_knowledge_tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 12px;
+}
+
+.o_knowledge_prose {
+    margin-top: 28px;
+    color: $o-gray-800;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        margin: 1.6em 0 .5em;
+        color: $o-gray-900;
+        font-weight: 600;
+        line-height: 1.3;
+        scroll-margin-top: 68px;
+    }
+
+    h1 { font-size: 1.7rem; }
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.15rem; }
+
+    p,
+    ul,
+    ol {
+        margin-bottom: .9em;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: $border-radius-lg;
+    }
+
+    blockquote {
+        margin: 1em 0;
+        padding: 2px 16px;
+        border-inline-start: 3px solid $o-gray-300;
+        color: $o-gray-700;
+    }
+
+    pre {
+        padding: 12px 14px;
+        border-radius: $border-radius-lg;
+        background: $o-gray-100;
+        font-size: 13px;
+    }
+
+    table {
+        width: 100%;
+        margin-bottom: 1em;
+        border-collapse: collapse;
+
+        td,
+        th {
+            padding: 6px 10px;
+            border: 1px solid $border-color;
+        }
+    }
+}
+
+.o_knowledge_wysiwyg .o_knowledge_prose {
+    min-height: 50vh;
+    margin-top: 12px;
+    outline: 0;
+}
+
+.o_knowledge_blank {
+    margin-top: 28px;
+    padding: 48px 24px;
+    border: 1px dashed $border-color;
+    border-radius: $border-radius-lg;
+    color: $o-gray-600;
+    text-align: center;
+
+    .oi {
+        font-size: 40px;
+    }
+
+    h3 {
+        margin: 8px 0 16px;
+        font-size: 1.05rem;
+    }
+}
+
+.o_knowledge_stats {
+    display: flex;
+    gap: 18px;
+    margin-top: 32px;
+    padding-top: 14px;
+    border-top: 1px solid $border-color;
+    color: $o-gray-600;
+    font-size: 13px;
+
+    span {
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+    }
+}
+
+.o_knowledge_toc {
+    position: sticky;
+    top: 76px;
+    display: flex;
+    flex: 0 0 200px;
+    flex-direction: column;
+    align-self: flex-start;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+}
+
+.o_knowledge_toc_item {
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+    color: $o-gray-600;
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: start;
+
+    &:hover {
+        color: $o-action;
+    }
+}
+
+.o_knowledge_toc_level_2 {
+    padding-inline-start: 10px;
+}
+
+.o_knowledge_toc_level_3 {
+    padding-inline-start: 20px;
+}
+
+.o_knowledge_welcome {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 32px;
+    color: $o-gray-600;
+    text-align: center;
+
+    > .oi {
+        font-size: 56px;
+    }
+
+    h2 {
+        margin: 0;
+        color: $o-gray-900;
+        font-size: 1.5rem;
+    }
+}
+
+.o_knowledge_skeleton {
+    max-width: $o-knowledge-reading-width;
+    margin: 0 auto;
+    padding: 92px 32px;
+
+    div {
+        height: 14px;
+        margin-bottom: 14px;
+        border-radius: $border-radius;
+        background: $o-gray-200;
+        animation: o_knowledge_pulse 1.2s ease-in-out infinite;
+    }
+
+    .o_knowledge_skeleton_title {
+        width: 60%;
+        height: 34px;
+        margin-bottom: 28px;
+    }
+}
+
+@keyframes o_knowledge_pulse {
+    50% {
+        opacity: .5;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_knowledge_skeleton div {
+        animation: none;
+    }
+}
+
+@include media-breakpoint-down(xl) {
+    .o_knowledge_toc {
+        display: none;
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .o_knowledge_sidebar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        z-index: 20;
+        width: #{"min(85vw, 320px)"} !important;
+        box-shadow: 0 4px 24px rgba($o-black, .25);
+    }
+
+    .o_knowledge_topbar {
+        padding-inline: 40px 12px;
+    }
+
+    .o_knowledge_page {
+        padding: 24px 16px 64px;
+    }
+
+    .o_knowledge_title,
+    .o_knowledge_title_input {
+        font-size: 1.75rem;
+    }
+}

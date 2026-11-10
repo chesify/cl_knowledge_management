@@ -1,0 +1,15 @@
+id,name,model_id,group_id/id,operation,domain
+knowledge_category_access_user,knowledge.category.user,knowledge.category,base.group_user,crud,
+knowledge_tag_access_user,knowledge.tag.user,knowledge.tag,base.group_user,crud,
+knowledge_article_access_user,knowledge.article.user,knowledge.article,base.group_user,crud,"[
+    '|', '|', '|', '|',
+    ('view_everyone', '=', True),
+    ('view_user_ids', 'in', user.id),
+    ('create_uid', '=', user.id),
+    ('author_id', '=', user.id),
+    ('view_department_ids', 'in', user.employee_id.department_id.ids)
+]"
+knowledge_article_access_system,knowledge.article.system,knowledge.article,base.group_system,crud,
+knowledge_article_version_access_user,knowledge.article.version.user,knowledge.article.version,base.group_user,cru,"[('article_id', 'access', 'read')]"
+knowledge_version_compare_wizard_access_user,knowledge.version.compare.wizard.user,knowledge.version.compare.wizard,base.group_user,cr,
+knowledge_article_view_log_access_system,knowledge.article.view.log.system,knowledge.article.view.log,base.group_system,r,

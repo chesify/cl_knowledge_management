@@ -1,0 +1,22 @@
+<odoo>
+    <template id="article_public_template" name="Public Article View">
+        <t t-call="web.frontend_layout">
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+            <t t-set="title" t-value="article.name"/>
+            <main class="o_knowledge_public">
+                <article class="o_knowledge_public_article">
+                    <header class="o_knowledge_public_header">
+                        <h1 t-out="article.name"/>
+                        <p class="o_knowledge_public_byline">
+                            <span t-out="article.create_uid.name"/>
+                            <span aria-hidden="true">·</span>
+                            <time t-att-datetime="article.create_date" t-out="article.create_date.strftime('%d %b %Y')"/>
+                        </p>
+                    </header>
+                    <div class="o_knowledge_public_body" t-out="article.content"/>
+                </article>
+            </main>
+        </t>
+    </template>
+</odoo>

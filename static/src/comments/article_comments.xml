@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="cl_knowledge_management.ArticleComments">
+        <section class="o_knowledge_comments" aria-label="Comments">
+            <h2 class="o_knowledge_comments_title">
+                Comments
+                <span t-if="this.state.messages.length" class="o_knowledge_comments_count" t-out="this.state.messages.length"/>
+            </h2>
+
+            <div class="o_knowledge_composer">
+                <img class="o_avatar rounded" t-att-src="this.currentAvatar" alt=""/>
+                <div class="flex-grow-1 min-w-0">
+                    <textarea class="o_knowledge_textarea" rows="2" placeholder="Add a comment…" aria-label="Add a comment"
+                              t-model.proxy="this.state.draft"
+                              t-on-keydown="(ev) => this.onComposerKeydown(ev, () => this.postComment())"/>
+                    <div t-if="this.state.draft.trim()" class="text-end mt-2">
+                        <button class="btn btn-primary btn-sm" t-att-disabled="this.state.posting" t-on-click="() => this.postComment()">Comment</button>
+                    </div>
+                </div>
+            </div>
+
+            <t t-foreach="this.rows()" t-as="row" t-key="row.message.id">
+                <div class="o_knowledge_comment" t-att-style="'--o-knowledge-depth:' + row.depth">
+                    <img t-if="row.avatar" class="o_avatar rounded" t-att-src="row.avatar" alt=""/>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="o_knowledge_comment_head">
+                            <strong t-out="row.message.author"/>
+                            <span class="text-muted" t-out="row.date"/>
+                        </div>
+                        <div class="o_knowledge_comment_body" t-out="row.body"/>
+                        <button class="btn btn-link btn-sm p-0" t-on-click="() => this.startReply(row.message)">Reply</button>
+                        <div t-if="this.state.replyTo === row.message.id" class="mt-2">
+                            <textarea class="o_knowledge_textarea" rows="2" aria-label="Reply" t-att-placeholder="'Reply to ' + row.message.author"
+                                      t-model.proxy="this.state.replyDraft"
+                                      t-on-keydown="(ev) => this.onComposerKeydown(ev, () => this.postReply())"/>
+                            <div class="d-flex gap-2 justify-content-end mt-2">
+                                <button class="btn btn-secondary btn-sm" t-on-click="() => this.startReply(row.message)">Cancel</button>
+                                <button class="btn btn-primary btn-sm" t-att-disabled="this.state.posting or !this.state.replyDraft.trim()" t-on-click="() => this.postReply()">Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </section>
+    </t>
+
+</templates>
